@@ -2,6 +2,9 @@ import jwt from 'jsonwebtoken';
 import { AppError } from '../middlewares/errorMiddleware.js';
 
 function generateToken (userId) {
+    if (!process.env.JWT_SECRET) {
+        throw new Error("JWT_SECRET missing");
+    }
     const token = jwt.sign({userId}, process.env.JWT_SECRET, {expiresIn: "1h"});
     return token;
 }

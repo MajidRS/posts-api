@@ -29,7 +29,7 @@ async function writeFileJSON (pathFile, data) {
         if (error instanceof SyntaxError) {
             throw new AppError(500, 'Data corrupted');
         }
-        throw new AppError(500, 'Unable to read data');
+        throw new AppError(500, 'Unable to write data');
     }
 }
 

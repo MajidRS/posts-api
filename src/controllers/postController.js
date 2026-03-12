@@ -26,7 +26,11 @@ async function handelCreatePost (req, res) {
             body += chunk.toString();
         })
         req.on('end', async () => {
-            body = JSON.parse(body);
+            try {
+                body = JSON.parse(body);
+            } catch {
+                throw new AppError(400, "Invalid JSON");
+            }
             body.id = Date.now();
             body.userId = req.userId ;
             body.createdAt = new Date().toISOString();
@@ -64,7 +68,8 @@ async function handelUpdatePost (path, req, res) {
                     ...body,
                     userId: posts[postIndex].userId,
                     id: posts[postIndex].id,
-                    createdAt: new Date().toISOString()
+                    createdAt: posts[postIndex].createdAt,
+                    updatedAt: new Date().toISOString()
                 }
                 posts = JSON.stringify(posts, null, 2);
                 await writeFileJSON("src/data/posts.json", posts);
@@ -79,33 +84,22 @@ async function handelUpdatePost (path, req, res) {
 }
 async function handelDeletePost (path, req, res) {
     try {
-        const id = path.split("/")[2];
+        const[, ,id] = path.split("/");
         const userId = req.userId;
-        let body = "";
-        req.on('data', (chunk) => {
-            body += chunk.toString();
-        })
-        req.on('end', async () => {
-            try {
-                body = JSON.parse(body);
-                let posts = await readFileJSON("src/data/posts.json");
-                let postIndex = posts.findIndex(post => post.id === +id);
-                if (postIndex === -1) {
-                    throw new AppError(404, "Post Not Found");
-                }
-                if (posts[postIndex].userId !== userId) {
-                    throw new AppError(403, "You Can Only Delete Your Own Posts");
-                }
-                posts.splice(postIndex, 1); 
-                posts = JSON.stringify(posts, null, 2);
-                await writeFileJSON("src/data/posts.json", posts);
-                sendResponse(res, 200,{message: "Post Deleted successfly"});
-            } catch (error) {
-                handelErrors(res, error);
-            }
-        })
+        let posts = await readFileJSON("src/data/posts.json");
+        let postIndex = posts.findIndex(post => post.id === +id);
+        if (postIndex === -1) {
+            throw new AppError(404, "Post Not Found");
+        }
+        if (posts[postIndex].userId !== userId) {
+            throw new AppError(403, "You Can Only Delete Your Own Posts");
+        }
+        posts.splice(postIndex, 1); 
+        posts = JSON.stringify(posts, null, 2);
+        await writeFileJSON("src/data/posts.json", posts);
+        sendResponse(res, 200,{message: "Post Deleted successfly"});
     } catch (error) {
-        throw new AppError(500, 'Error In Internal Server');
+        handelErrors(res, error);
     }
 }
 
