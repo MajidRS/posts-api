@@ -1,7 +1,7 @@
 import { AppError } from "./errorMiddleware.js";
 import {verifyToken} from "../utils/tokenUtils.js";
 
-function authenticateToken(req) {
+function authenticateToken(req, res) {
     try {
         let authBearer = req.headers["authorization"];
         if (!authBearer || !authBearer.startsWith('Bearer ')) {

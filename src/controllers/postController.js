@@ -2,7 +2,7 @@ import { readFileJSON, writeFileJSON} from "../utils/fileUtils.js";
 import { AppError, handelErrors } from "../middlewares/errorMiddleware.js";
 import { sendResponse } from "../utils/sendResponseUtil.js";
 
-async function handelGetPosts (res) {
+async function handelGetPosts (req, res) {
     try {
         const posts = await readFileJSON("src/data/posts.json");
         sendResponse(res, 200, posts);
@@ -10,7 +10,7 @@ async function handelGetPosts (res) {
         handelErrors(res, error);
     }
 }
-async function handelGetPost (path, res) {
+async function handelGetPost (path, req, res) {
     const postId = path.split('/')[2];
     const posts = await readFileJSON("src/data/posts.json");
     const post = posts.find(post => post.id === +postId);
@@ -54,7 +54,11 @@ async function handelUpdatePost (path, req, res) {
         })
         req.on('end', async () => {
             try {
-                body = JSON.parse(body);
+                try {
+                    body = JSON.parse(body);
+                } catch {
+                    throw new AppError(400, "Invalid JSON");
+                }
                 let posts = await readFileJSON("src/data/posts.json");
                 let postIndex = posts.findIndex(post => post.id === +id);
                 if (postIndex === -1) {

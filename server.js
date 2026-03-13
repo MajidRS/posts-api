@@ -17,21 +17,21 @@ http.createServer(async (req, res) => {
             await handelLogin(req, res);
         }
         else if (req.method === "GET" && path === '/posts') {
-            await handelGetPosts(res);
+            await handelGetPosts(req, res);
         }
         else if (req.method === "GET" && path.startsWith('/posts/')) {
-            await handelGetPost(path, res);
+            await handelGetPost(path, req, res);
         }
         else if (req.method === "POST" && path === '/posts'){
-            if (!authenticateToken(req)) return;
+            if (!authenticateToken(req, res)) return;
             await handelCreatePost(req, res);
         }
         else if (req.method === "PUT" && path.startsWith('/posts/')){
-            if (!authenticateToken(req)) return;
+            if (!authenticateToken(req, res)) return;
             await handelUpdatePost (path, req, res);
         }
         else if (req.method === "DELETE" && path.startsWith('/posts/')){
-            if (!authenticateToken(req)) return;
+            if (!authenticateToken(req, res)) return;
             await handelDeletePost (path, req, res);
         }
         else {
